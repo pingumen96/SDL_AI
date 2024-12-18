@@ -1,6 +1,7 @@
 #include "Map.h"
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 Map::Map(int rows, int cols, int tileSize, float obstacleDensity)
     : rows(rows), cols(cols), tileSize(tileSize) {
@@ -29,6 +30,37 @@ void Map::generateGrid(float obstacleDensity) {
         grid.push_back(gridRow);
     }
 }
+
+bool Map::isCollidingWithWall(float x, float y) const {
+    int tileX = static_cast<int>(x) / tileSize;
+    int tileY = static_cast<int>(y) / tileSize;
+
+    std::cout << "Checking collision at (" << x << ", " << y << ") -> Tile (" << tileX << ", " << tileY << ")" << std::endl;
+
+    if (tileX < 0 || tileX >= cols || tileY < 0 || tileY >= rows) {
+        return true;
+    }
+
+    return grid[tileY][tileX] == 1;
+}
+
+
+std::pair<int, int> Map::getRandomValidPosition() const {
+    int tileX, tileY;
+    do {
+        tileX = std::rand() % cols; // Colonna casuale
+        tileY = std::rand() % rows; // Riga casuale
+    } while (grid[tileY][tileX] == 1); // Ripeti finché è un ostacolo
+
+    // Converti in coordinate pixel
+    int posX = tileX * tileSize;
+    int posY = tileY * tileSize;
+
+    std::cout << "Random position: " << posX << ", " << posY << std::endl;
+
+    return {posX, posY};
+}
+
 
 void Map::render(SDL_Renderer* renderer) {
     for (auto& row : tiles) {

@@ -5,22 +5,23 @@
 #include <SDL2/SDL.h>
 
 struct PositionComponent : public Component {
-    int x, y;
-    PositionComponent(int x, int y) : x(x), y(y) {}
+    float x, y;
+    PositionComponent(float x, float y) : x(x), y(y) {}
 };
 
 struct VelocityComponent : public Component {
-    int dx, dy;
-    VelocityComponent(int dx, int dy) : dx(dx), dy(dy) {}
+    float dx, dy;
+    bool dynamic = false;
+
+    VelocityComponent(float dx, float dy, bool dynamic = false) : dx(dx), dy(dy), dynamic(dynamic) {}
 };
 
 // AI components
-using Point = std::pair<int, int>;
+using Point = std::pair<float, float>;
 
 struct PathfindingComponent : public Component {
     std::vector<Point> path;
-    int currentStep;
-    PathfindingComponent() : currentStep(0) {}
+    int targetID = -1;
 };
 
 struct SteeringComponent : public Component {

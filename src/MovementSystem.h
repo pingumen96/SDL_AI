@@ -3,22 +3,19 @@
 
 #include "ECS.h"
 #include "Components.h"
+#include "Map.h"
+#include <cmath>
 
 class MovementSystem {
 public:
-    void update(EntityManager& manager) {
-        for (const auto& entity : manager.getEntities()) {
-            if (manager.hasComponent<PositionComponent>(entity->getID()) &&
-                manager.hasComponent<VelocityComponent>(entity->getID())) {
-                
-                auto pos = manager.getComponent<PositionComponent>(entity->getID());
-                auto vel = manager.getComponent<VelocityComponent>(entity->getID());
+    void update(EntityManager& manager, const Map& map);
 
-                pos->x += vel->dx;
-                pos->y += vel->dy;
-            }
-        }
-    }
+    void seek(EntityManager& manager, int entityID, float targetX, float targetY, float speed);
+    void flee(EntityManager& manager, int entityID, float dangerX, float dangerY, float speed);
+
+private:
+    bool isColliding(float x, float y, const Map& map);
+    bool isPathColliding(float startX, float startY, float endX, float endY, const Map& map);
 };
 
 #endif

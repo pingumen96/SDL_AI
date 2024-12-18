@@ -1,34 +1,48 @@
 #include "Game.h"
 
-Game::Game() {}
+Game::Game() : isRunning(false), window(nullptr), renderer(nullptr) {}
 Game::~Game() {}
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
     int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) == 0) {
         window = SDL_CreateWindow(title, xpos, ypos, width, height, flags);
-        renderer = SDL_CreateRenderer(window, -1, 0);
-
-        if (window && renderer) {
-            isRunning = true;
-
-            // Inizializza la mappa come shared_ptr
-            map = std::make_shared<Map>(15, 20, 40, 0.2f);
-
-            // Crea le entità come shared_ptr
-            seeker = entityManager.createEntity();
-            target = entityManager.createEntity();
-
-            // Configura i componenti
-            entityManager.addComponent(seeker->getID(), std::make_shared<PositionComponent>(0, 0));
-            entityManager.addComponent(seeker->getID(), std::make_shared<PathfindingComponent>());
-            entityManager.addComponent(target->getID(), std::make_shared<PositionComponent>(10 * 40, 10 * 40));
+        if (!window) {
+            std::cerr << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
+            SDL_Quit();
+            return false;
         }
+
+        renderer = SDL_CreateRenderer(window, -1, 0);
+        if (!renderer) {
+            std::cerr << "Failed to create SDL Renderer: " << SDL_GetError() << std::endl;
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+            return false;
+        }
+
+        isRunning = true;
+
+        // Inizializza la mappa come shared_ptr
+        map = std::make_shared<Map>(15, 20, 40, 0.2f);
+
+        // Crea le entità come shared_ptr
+        seeker = entityManager.createEntity();
+        target = entityManager.createEntity();
+
+        // Configura i componenti
+        entityManager.addComponent(seeker->getID(), std::make_shared<PositionComponent>(0, 0));
+        entityManager.addComponent(seeker->getID(), std::make_shared<VelocityComponent>(0, 0, true));
+
+        auto randomPosition = map->getRandomValidPosition();
+
+        entityManager.addComponent(target->getID(), std::make_shared<PositionComponent>(randomPosition.first, randomPosition.second));
     } else {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
-        isRunning = false;
+        return false;
     }
+
     return isRunning;
 }
 
@@ -44,8 +58,13 @@ void Game::update() {
     Uint32 currentTime = SDL_GetTicks();
 
     if (currentTime > lastUpdateTime + UPDATE_DELAY) {
-        // Aggiorna il sistema di pathfinding
-        pathfindingSystem.update(entityManager, *map);
+        auto targetPosition = entityManager.getComponent<PositionComponent>(target->getID());
+
+        if (targetPosition) {
+            movementSystem.seek(entityManager, seeker->getID(), targetPosition->x, targetPosition->y, 2.0f);
+        }
+        // Aggiorna il movimento delle entità
+        movementSystem.update(entityManager, *map);
 
         lastUpdateTime = currentTime;
     }
@@ -60,15 +79,19 @@ void Game::render() {
 
     // Renderizza il seeker
     auto seekerPos = entityManager.getComponent<PositionComponent>(seeker->getID());
-    SDL_Rect seekerRect = {seekerPos->x, seekerPos->y, 40, 40};
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_RenderFillRect(renderer, &seekerRect);
+    if (seekerPos) {
+        SDL_Rect seekerRect = {static_cast<int>(seekerPos->x), static_cast<int>(seekerPos->y), 10, 10};
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_RenderFillRect(renderer, &seekerRect);
+    }
 
     // Renderizza il target
     auto targetPos = entityManager.getComponent<PositionComponent>(target->getID());
-    SDL_Rect targetRect = {targetPos->x, targetPos->y, 40, 40};
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &targetRect);
+    if (targetPos) {
+        SDL_Rect targetRect = {static_cast<int>(targetPos->x), static_cast<int>(targetPos->y), 10, 10};
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &targetRect);
+    }
 
     SDL_RenderPresent(renderer);
 }
@@ -78,8 +101,9 @@ void Game::clean() {
     seeker.reset();
     target.reset();
 
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
+    if (renderer) SDL_DestroyRenderer(renderer);
+    if (window) SDL_DestroyWindow(window);
+
     SDL_Quit();
     std::cout << "Game cleaned!\n";
 }

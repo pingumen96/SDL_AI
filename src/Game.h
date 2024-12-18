@@ -6,6 +6,7 @@
 #include "ECS.h"      
 #include "Map.h"         
 #include "PathfindingSystem.h" 
+#include "MovementSystem.h"
 
 class Game {
 public:
@@ -25,14 +26,17 @@ private:
     SDL_Renderer* renderer;
 
     // Game systems and entities
-    EntityManager entityManager;                    // Gestore delle entità
-    std::shared_ptr<Map> map;                      // Mappa condivisa
-    std::shared_ptr<Entity> seeker;                // Seeker gestito come shared_ptr
-    std::shared_ptr<Entity> target;                // Target gestito come shared_ptr
-    PathfindingSystem pathfindingSystem;           // Sistema di pathfinding
+    EntityManager entityManager;
+    std::shared_ptr<Map> map;
+    std::shared_ptr<Entity> seeker;
+    std::shared_ptr<Entity> target;    
 
+    // Game systems      
+    PathfindingSystem pathfindingSystem;
+    MovementSystem movementSystem;
+    
     // Timing per l'aggiornamento
-    const int UPDATE_DELAY = 200;
+    const int UPDATE_DELAY = 10;
     Uint32 lastUpdateTime = 0;
 };
 
