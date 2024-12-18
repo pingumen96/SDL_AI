@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug AI Demo",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/ai_demo",
+            "args": [],
+            "stopAtEntry": true,  // Ferma all'inizio del programma
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,  // Usa il terminale integrato di VSCode
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",  // Path al debugger gdb
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}
