@@ -21,6 +21,7 @@ using Point = std::pair<float, float>;
 
 struct PathfindingComponent : public Component {
     std::vector<Point> path;
+    int currentStep = 0;
     int targetID = -1;
 };
 

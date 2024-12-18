@@ -34,7 +34,7 @@ void PathfindingSystem::update(EntityManager& entityManager, const Map& map) {
     }
 }
 
-std::vector<std::pair<int, int>> PathfindingSystem::findPath(const std::vector<std::vector<int>>& grid, Point start, Point goal) {
+std::vector<std::pair<float, float>> PathfindingSystem::findPath(const std::vector<std::vector<int>>& grid, Point start, Point goal) {
     std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> openSet;
     std::map<Point, Point> cameFrom;
     std::map<Point, int> gScore;
